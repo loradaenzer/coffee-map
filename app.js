@@ -424,7 +424,9 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      // updateViaCache:'none' stops the browser from reusing GitHub Pages' cached
+      // copy of this script when checking for updates (it's served with max-age=600).
+      navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' }).catch(() => {});
     });
   }
 })();

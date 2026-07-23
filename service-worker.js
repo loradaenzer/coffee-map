@@ -1,4 +1,4 @@
-const CACHE = 'coffee-map-v3';
+const CACHE = 'coffee-map-v4';
 const APP_SHELL = [
   './',
   './index.html',
