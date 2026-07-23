@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#0a1426" />
+<title>Coffee Map</title>
+
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Coffee Map" />
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>☕ Coffee Map</h1>
+  <button id="menuBtn" class="icon-btn" aria-label="Menu">⋮</button>
+</header>
+
+<section class="stats">
+  <div class="stat">
+    <span class="stat-num" id="statTotal">0</span>
+    <span class="stat-label">coffees</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num" id="statRegions">0</span>
+    <span class="stat-label">places</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num" id="statToday">0</span>
+    <span class="stat-label">today</span>
+  </div>
+</section>
+
+<div id="map"></div>
+
+<div class="log-panel">
+  <button id="logBtn" class="log-btn">
+    <span class="log-btn-icon">☕</span>
+    <span class="log-btn-text">Log a coffee</span>
+  </button>
+  <div id="logStatus" class="log-status"></div>
+</div>
+
+<div id="historySheet" class="sheet hidden">
+  <div class="sheet-handle" id="historyHandle"></div>
+  <div class="sheet-header">
+    <h2>History</h2>
+    <button id="closeHistory" class="icon-btn">✕</button>
+  </div>
+  <ul id="historyList" class="history-list"></ul>
+</div>
+
+<div id="menuSheet" class="sheet hidden">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <h2>Menu</h2>
+    <button id="closeMenu" class="icon-btn">✕</button>
+  </div>
+  <button class="menu-item" id="openHistoryBtn">📜 View history</button>
+  <button class="menu-item" id="exportBtn">⬇️ Export backup (JSON)</button>
+  <label class="menu-item" for="importInput">⬆️ Import backup (JSON)</label>
+  <input type="file" id="importInput" accept="application/json" hidden />
+  <button class="menu-item danger" id="clearBtn">🗑️ Clear all data</button>
+  <div class="menu-footer">Coffee Map · data stays on this phone</div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
