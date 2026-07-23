@@ -131,15 +131,17 @@
     div.style.fontSize = '11px';
     div.style.lineHeight = '1.4';
     div.style.boxShadow = '0 2px 10px rgba(0,0,0,0.35)';
-    div.innerHTML = `
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-        <span style="width:8px;height:8px;border-radius:50%;background:rgb(43,108,255);display:inline-block;"></span>
-        <span>1 coffee</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="width:16px;height:16px;border-radius:50%;background:rgb(255,59,48);display:inline-block;"></span>
-        <span>${MAX_COUNT}+ coffees</span>
+    const rows = COUNT_STOPS.map((stop, i) => {
+      const color = colorForCount(stop.count);
+      const size = 8 + fractionForCount(stop.count) * 14; // 8..22px, compact legend scale
+      const label = i === COUNT_STOPS.length - 1 ? `${stop.count}+ coffees` : `${stop.count} coffee${stop.count > 1 ? 's' : ''}`;
+      return `
+      <div style="display:flex;align-items:center;gap:6px;${i > 0 ? 'margin-top:2px;' : ''}">
+        <span style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+        <span>${label}</span>
       </div>`;
+    }).join('');
+    div.innerHTML = rows;
     return div;
   };
   legend.addTo(map);
