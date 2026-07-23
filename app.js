@@ -3,7 +3,6 @@
 
   const STORAGE_KEY = 'coffee_map_entries_v1';
   const CELL_DEG = 0.01; // ~1.1km lat / ~0.9km lng grid cell -> "same neighborhood"
-  const SATURATE_AT = 15; // coffees in one cell where color/size maxes out
 
   const KOREA_CENTER = [36.5, 127.8];
 
@@ -31,35 +30,48 @@
   let entries = loadEntries();
 
   // ---------- color / size scale ----------
+  // Fixed checkpoints: 1=blue, 3=green, 5=yellow, 10=orange, 15+=red.
+  // Colors blend smoothly between checkpoints; radius grows the same way.
 
-  const STOPS = [
-    { t: 0.0, c: [43, 108, 255] },   // cold blue - 1 coffee
-    { t: 0.25, c: [34, 201, 201] },  // cyan
-    { t: 0.5, c: [61, 220, 115] },   // green
-    { t: 0.7, c: [244, 224, 77] },   // yellow
-    { t: 0.85, c: [255, 138, 61] },  // orange
-    { t: 1.0, c: [255, 59, 48] },    // hot red - saturated
+  const COUNT_STOPS = [
+    { count: 1, c: [43, 108, 255] },  // blue
+    { count: 3, c: [61, 220, 115] },  // green
+    { count: 5, c: [244, 224, 77] },  // yellow
+    { count: 10, c: [255, 138, 61] }, // orange
+    { count: 15, c: [255, 59, 48] },  // red
   ];
+  const MAX_COUNT = COUNT_STOPS[COUNT_STOPS.length - 1].count;
 
-  function tForCount(count) {
-    return Math.max(0, Math.min(1, (count - 1) / (SATURATE_AT - 1)));
+  function fractionForCount(count) {
+    if (count <= COUNT_STOPS[0].count) return 0;
+    if (count >= MAX_COUNT) return 1;
+    for (let i = 0; i < COUNT_STOPS.length - 1; i++) {
+      const a = COUNT_STOPS[i], b = COUNT_STOPS[i + 1];
+      if (count >= a.count && count <= b.count) {
+        const local = (count - a.count) / (b.count - a.count);
+        return (i + local) / (COUNT_STOPS.length - 1);
+      }
+    }
+    return 1;
   }
 
-  function colorForT(t) {
-    for (let i = 0; i < STOPS.length - 1; i++) {
-      const a = STOPS[i], b = STOPS[i + 1];
-      if (t >= a.t && t <= b.t) {
-        const f = (t - a.t) / (b.t - a.t || 1);
+  function colorForCount(count) {
+    if (count <= COUNT_STOPS[0].count) return `rgb(${COUNT_STOPS[0].c.join(',')})`;
+    if (count >= MAX_COUNT) return `rgb(${COUNT_STOPS[COUNT_STOPS.length - 1].c.join(',')})`;
+    for (let i = 0; i < COUNT_STOPS.length - 1; i++) {
+      const a = COUNT_STOPS[i], b = COUNT_STOPS[i + 1];
+      if (count >= a.count && count <= b.count) {
+        const f = (count - a.count) / (b.count - a.count);
         const c = a.c.map((v, idx) => Math.round(v + (b.c[idx] - v) * f));
         return `rgb(${c[0]},${c[1]},${c[2]})`;
       }
     }
-    const last = STOPS[STOPS.length - 1].c;
+    const last = COUNT_STOPS[COUNT_STOPS.length - 1].c;
     return `rgb(${last[0]},${last[1]},${last[2]})`;
   }
 
-  function radiusForT(t) {
-    return 9 + t * 23; // 9px (cold, few visits) .. 32px (hot, many visits)
+  function radiusForFraction(f) {
+    return 9 + f * 23; // 9px (1 coffee) .. 32px (15+ coffees)
   }
 
   // ---------- grid aggregation ----------
@@ -126,7 +138,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="width:16px;height:16px;border-radius:50%;background:rgb(255,59,48);display:inline-block;"></span>
-        <span>${SATURATE_AT}+ coffees</span>
+        <span>${MAX_COUNT}+ coffees</span>
       </div>`;
     return div;
   };
@@ -139,11 +151,12 @@
     for (const cell of cells.values()) {
       const lat = cell.sumLat / cell.count;
       const lng = cell.sumLng / cell.count;
-      const t = tForCount(cell.count);
+      const f = fractionForCount(cell.count);
+      const color = colorForCount(cell.count);
       const marker = L.circleMarker([lat, lng], {
-        radius: radiusForT(t),
-        color: colorForT(t),
-        fillColor: colorForT(t),
+        radius: radiusForFraction(f),
+        color: color,
+        fillColor: color,
         fillOpacity: 0.55,
         weight: 2,
         opacity: 0.9,
